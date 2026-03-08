@@ -1,38 +1,44 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phonetic Table Renderer</title>
     <style>
-        
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif+KR:wght@200..900&family=Zen+Antique+Soft&display=swap');
 
         @font-face {
-            font-family: 'Genwan Serif'; /* Name you choose to use in your CSS */
+            font-family: 'Genwan Serif';
+            /* Name you choose to use in your CSS */
             src: url('https://raw.githubusercontent.com/ButTaiwan/genwan-font/master/otf/TW/GenWanMin2TW-SB.otf') format('opentype');
-                /* url('https://raw.githubusercontent.com/ButTaiwan/genwan-font/master/ttc/GenWanMin2-SB.ttc') format('ttc'); */
+            /* url('https://raw.githubusercontent.com/ButTaiwan/genwan-font/master/ttc/GenWanMin2-SB.ttc') format('ttc'); */
             font-weight: normal;
             font-style: normal;
-            font-display: swap; /* Recommended for better performance */
+            font-display: swap;
+            /* Recommended for better performance */
         }
 
         @font-face {
-            font-family: 'Genyo Sans'; /* Name you choose to use in your CSS */
+            font-family: 'Genyo Sans';
+            /* Name you choose to use in your CSS */
             src: url('https://raw.githubusercontent.com/ButTaiwan/genyog-font/master/otf/TW/GenYoGothic2TW-B.otf') format('opentype');
-                /* url('https://raw.githubusercontent.com/ButTaiwan/genwan-font/master/ttc/GenWanMin2-SB.ttc') format('ttc'); */
+            /* url('https://raw.githubusercontent.com/ButTaiwan/genwan-font/master/ttc/GenWanMin2-SB.ttc') format('ttc'); */
             font-weight: bold;
             font-style: normal;
-            font-display: swap; /* Recommended for better performance */
+            font-display: swap;
+            /* Recommended for better performance */
         }
 
         @font-face {
-            font-family: 'Genyo Sans'; /* Name you choose to use in your CSS */
+            font-family: 'Genyo Sans';
+            /* Name you choose to use in your CSS */
             src: url('https://raw.githubusercontent.com/ButTaiwan/genyog-font/master/otf/TW/GenYoGothic2TW-R.otf') format('opentype');
-                /* url('https://raw.githubusercontent.com/ButTaiwan/genwan-font/master/ttc/GenWanMin2-SB.ttc') format('ttc'); */
+            /* url('https://raw.githubusercontent.com/ButTaiwan/genwan-font/master/ttc/GenWanMin2-SB.ttc') format('ttc'); */
             font-weight: normal;
             font-style: normal;
-            font-display: swap; /* Recommended for better performance */
+            font-display: swap;
+            /* Recommended for better performance */
         }
 
         :root {
@@ -105,29 +111,49 @@
             vertical-align: middle;
         }
 
-        .label { width: 15%; font-size: 1.2rem; }
-        .header { font-weight: bold; }
-        
+        .label {
+            width: 15%;
+            font-size: 1.2rem;
+        }
+
+        .header {
+            font-weight: bold;
+        }
+
         /* --- Font-Family Differentiation --- */
         .character-cell {
             font-family: var(--char-font);
             padding: 40px;
         }
 
-        .main-character { font-size: 7rem; }
-        .reg-marker { font-size: 2rem; }
+        .main-character {
+            font-size: 7rem;
+        }
+
+        .reg-marker {
+            font-size: 2rem;
+        }
 
         @media (max-width: 600px) {
-            .main-character { font-size: 4rem; }
-            .controls { flex-direction: row; }
-            #input-char { font-size: 1rem; }
+            .main-character {
+                font-size: 4rem;
+            }
+
+            .controls {
+                flex-direction: row;
+            }
+
+            #input-char {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <div class="controls">
-        <input type="text" id="input-char" placeholder="輸入漢字 (e.g. 光)..." autocomplete="off">
+        <input type="text" id="input-char" placeholder="光 kng [白]" autocomplete="off">
         <button id="render-btn">Render</button>
     </div>
 
@@ -150,19 +176,19 @@
                 <td>韻尾 (C)</td>
             </tr>
             <tr>
-                <td class="label">IPA/拼音</td>
+                <td class="label">拼音</td>
                 <td id="ipa-initial">k（清不送氣）</td>
                 <td id="ipa-medial"></td>
-                <!-- <td id="ipa-nucleus"></td> -->
-                <td id="ipa-coda" colspan="2">ng [ŋ̍]</td>
+                <td id="ipa-nucleus"></td>
+                <td id="ipa-coda">ng [ŋ̍]</td>
             </tr>
-            <tr>
+            <!-- <tr>
                 <td class="label">注 音</td>
                 <td id="zy-initial" style="font-size: 1.5rem;">ㄍ</td>
                 <td id="zy-medial"></td>
-                <!-- <td id="zy-nucleus"></td> -->
-                <td id="zy-coda" colspan="2" style="font-size: 1.5rem;">ㆭ</td>
-            </tr>
+                <td id="zy-nucleus"></td>
+                <td id="zy-coda" style="font-size: 1.5rem;">ㆭ</td>
+            </tr> -->
             <tr>
                 <td class="label">漢 字</td>
                 <td colspan="4" class="character-cell">
@@ -176,18 +202,89 @@
     <script>
         const input = document.getElementById('input-char');
         const btn = document.getElementById('render-btn');
+        const char = document.getElementById('display-char');
+        const bunpeh = document.getElementById('display-reg');
+
+
+
+        function parseRoman(roman) {
+            const toreplace = Object.entries({
+                "ir": "y",
+                "er": "w",
+                "oo": "x",
+                "ee": "z",
+                "ae": "z",
+
+
+                // 將調符轉換為調號 (1-8)
+                "\u0300": "3",
+                "\u0301": "2",
+                "\u0302": "5",
+                "\u0304": "7",
+                "\u0306": "6",
+                "\u030c": "6",
+                "\u030d": "8",
+                "\u030b": "9",
+            });
+
+            // remove the diacritics
+            roman = roman
+                // .toLowercase()
+                .normalize("NFD");
+            toreplace.forEach(([left, right]) => {
+                roman = roman.replace(left, right);
+            });
+
+            // if the tone is 2356789 it would be decided now.
+
+            const tonenum = roman[roman.search(/[2356789]/g)];
+
+            //remove any non-roman letters.
+            const splitted = roman.replace(/[^a-z]/g, "").split(/[aeiouwxyz]+/g);
+            const [initial, coda] = splitted;
+            console.log(splitted)
+            const tone = tonenum || ("ptk".includes(coda) || coda?.[coda.length-1]==='h') && '4' || '1';
+
+            document.getElementById('ipa-initial').innerText = initial;
+            document.getElementById('display-tone').innerText = tone;
+
+            let vowels = roman.slice(initial?.length, roman.length-coda?.length);
+            console.log(vowels)
+            if (vowels.length > 2)
+                var [medial, nucleus, offglide] = [vowels[0], vowels.slice(0, -1), vowels[vowels.length-1]];
+            else if (vowels.length === 1)
+                var [medial, nucleus, offglide] = ['', vowels, ''];
+            else if ("iuyw".includes(vowels[0]))
+                var [medial, nucleus, offglide] = [vowels[0], vowels[1], ''];
+            else
+                var [medial, nucleus, offglide] = ['', vowels[0], vowels[1]];
+
+
+            toreplace.forEach(([l, r]) => {
+                medial = medial.replace(r, l);
+                offglide = offglide.replace(r, l);
+                nucleus = nucleus.replace(r, l);
+            });
+            console.log(medial, nucleus, offglide)
+            document.getElementById('ipa-coda').innerText = offglide + coda;
+            document.getElementById('ipa-medial').innerText = medial;
+            document.getElementById('ipa-nucleus').innerText = nucleus;
+
+        }
 
         function handleRender() {
-            const val = input.value.trim();
-            if (!val) return;
-            
+            const val = input.value.trim().split(" ");
+            if (val[0] == '') return;
+
             console.log("Rendering for:", val);
-            // This is where you'll plug in your conversion logic
-            // e.g., const result = myConvertFunc(val);
-            // updateDOM(result);
-            
-            // Temporary visual feedback
-            document.getElementById('display-char').innerText = val;
+
+            char.innerText = val[0];
+            const roman = val[1];
+            bunpeh.innerText = val[2];
+            parseRoman(roman);
+
+
+
         }
 
         btn.addEventListener('click', handleRender);
@@ -199,4 +296,5 @@
         });
     </script>
 </body>
+
 </html>
